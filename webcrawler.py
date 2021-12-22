@@ -16,30 +16,31 @@ class WebCrawler:
 
 	def get_title(self,my_url):
 
-			#Requesting URL and getting response
-			uClient = uReq(my_url)
-			#getting response and reading data
-			page_html = uClient.read()
-			#Closing URL Client Connection
-			uClient.close()
-			#Parsing using HTML parser and beautiful soap
-			page_soup = soup(page_html, "html.parser")
+		#Requesting URL and getting response
+		uClient = uReq(my_url)
+		#getting response and reading data
+		page_html = uClient.read()
+		#Closing URL Client Connection
+		uClient.close()
+		#Parsing using HTML parser and beautiful soap
+		page_soup = soup(page_html, "html.parser")
 
-			return page_soup
+		return page_soup
 
 	def find_title(self,page_soup):
-
+		list_title=[]
 		#Finding all title
 		title=page_soup.findAll("title")
 
 		#Creating a list of all titles found on the page
-		list_title=[]
+		
 
 		#iterating through the list and eliminating the first 12 character to remove "Top Story -" and get final top stories into a list
-		for i in range(1,len(list_title)):
+		for i in range(1,len(title)):
 		    
 # 		    print(title[i].get_text()[12:])
 		    list_title.append(title[i].get_text()[12:])
+		return list_title
 
 	def create_CSV(self,list_title,file_name):
 
@@ -48,7 +49,8 @@ class WebCrawler:
 		df = pd.DataFrame(list_title, columns = ['Top Story'])
 
 		#Storing the result into a CSV file
-		df.to_csv()
+		df.to_csv(file_name)
+		return "Successfully saved data to file names :"+file_name
 
 
 if __name__ == '__main__':
@@ -58,11 +60,17 @@ if __name__ == '__main__':
 	config=WebCrawler.read_ini("config.ini")
 	#Reading the URL to be parsed
 	my_url=config["DEV_URL"]["URL"]
+
+    
 	#Get the title from the page
 	page_soup=WebCrawler.get_title(my_url)
+
 	#finding all title from the RSSfeed received as response
 	list_title=WebCrawler.find_title(page_soup)
+
+    
 	#Creating a CSV using the file name of user's choice
 	file_name=config["FILE_NAME"]["NAME"]
 	#Using Pandas to_csv function to create a CSV file as output of the response received
-	WebCrawler.create_CSV(list_title,file_name)
+	result=(WebCrawler.create_CSV(list_title,file_name))
+	print(result)
